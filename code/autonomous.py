@@ -16,11 +16,11 @@ class Autonomous:
 
     # x = np.array
     def process(self, x):
+        p = len(x)
         if is_empty_list:
             self.clusters.append(new_cluster(
-                x, self.frac, self.fac, self.p, self.m))
+                x, self.frac, self.fac, p, self.m))
         else:
-            p = len(x)
             win_cluster = min_dist(x, self.clusters)
             if dist(x, win_cluster) > win_cluster.radius:
                 self.clusters.append(new_cluster(
