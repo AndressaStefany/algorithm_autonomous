@@ -6,9 +6,9 @@ from update_clusters import update_winner_cluster, update_nearest_cluster
 
 
 class Autonomous:
-    def __init__(self, fac, m=4):
+    def __init__(self, fac, frac=100, m=4):  # default of article
         self.fac = fac
-        self.frac = 100  # default of article
+        self.frac = frac
         self.m = m
         self.clusters = []
 
