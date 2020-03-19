@@ -12,5 +12,5 @@ def new_cluster(x, frac, fac, p, m):
     k = 1
     radius = get_radius(fac, p, m, k)
     inv_cov = get_inv_cov(x, frac)
-    S = np.array([x])
+    S = [x]
     return Cluster(centroid=x, inv_cov=inv_cov, radius=radius, k=k, S=S)
