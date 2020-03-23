@@ -20,3 +20,22 @@ def min_dist(x, clusters):
             min_cluster = cluster
 
     return min_cluster
+
+
+def covariance(x, y):
+    # input = np.array
+    data = np.array([x, y])
+    df = pd.DataFrame(data=data)
+    return df.cov()
+
+
+def transpose(x):
+    # input = np.array
+    data = np.array([x])
+    df = pd.DataFrame(data=data)
+    return df.T
+
+
+def inverse(x):
+    # input = np.array
+    return np.linalg.inv(x)
