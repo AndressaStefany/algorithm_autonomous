@@ -22,14 +22,8 @@ def update_nearest_cluster(x, winner_cluster, clusters):
     near_cluster = min_dist(winner_cluster.centroid, clusters)
     clusters.remove(near_cluster)
 
-    aux_centroid = near_cluster.centroid
     n = 1/near_cluster.k
 
     near_cluster.centroid = near_cluster.centroid - \
         n * (x - near_cluster.centroid)
-    # diff_centroid = aux_centroid - near_cluster.centroid
-
-    # for points in near_cluster.S:
-    #     new_points = [c + diff_centroid for c in points]
-    # near_cluster.S = new_points
     clusters.append(near_cluster)
