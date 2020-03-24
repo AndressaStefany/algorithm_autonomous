@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 from scipy.spatial import distance
 
 
@@ -22,20 +24,18 @@ def min_dist(x, clusters):
     return min_cluster
 
 
-def covariance(x, y):
-    # input = np.array
-    data = np.array([x, y])
-    df = pd.DataFrame(data=data)
-    return df.cov()
-
-
 def transpose(x):
     # input = np.array
     data = np.array([x])
     df = pd.DataFrame(data=data)
-    return df.T
+    return df.T.to_numpy()
 
 
 def inverse(x):
     # input = np.array
     return np.linalg.inv(x)
+
+
+def determinant(x):
+    # input = np.array
+    return np.linalg.det(x)

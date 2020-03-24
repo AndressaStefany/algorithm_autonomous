@@ -44,5 +44,4 @@ class Autonomous:
                     self.clusters.append(new_cluster)
                 else:
                     self.clusters.append(win_cluster)
-                pass
         pass
