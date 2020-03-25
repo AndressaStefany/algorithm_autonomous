@@ -5,6 +5,7 @@ from new_cluster import new_cluster
 from update_clusters import update_winner_cluster, update_nearest_cluster
 from overlap import overlap
 from merge import merge
+from get_radius import get_radius
 
 
 class Autonomous:
@@ -24,7 +25,9 @@ class Autonomous:
                 x, self.frac, self.fac, p, self.m))
         else:
             win_cluster = min_dist(x, self.clusters)
-            if dist(x, win_cluster) > win_cluster.radius:
+            win_cluster_radius = get_radius(
+                self.fac, p, self.m, win_cluster.k)
+            if dist(x, win_cluster) > win_cluster_radius:
                 self.clusters.append(new_cluster(
                     x, self.frac, self.fac, p, self.m))
             else:
@@ -37,11 +40,13 @@ class Autonomous:
                 (max_olap, max_cluster) = overlap(
                     win_cluster, self.clusters)
                 if (max_olap > 0):
+                    # verificar volume
+                    # se V merged <= p(Vmin + Vk) => merge
                     self.clusters.remove(win_cluster)
                     self.clusters.remove(max_cluster)
 
-                    new_cluster = merge(win_cluster, max_cluster)
-                    self.clusters.append(new_cluster)
+                    cluster_merged = merge(win_cluster, max_cluster)
+                    self.clusters.append(cluster_merged)
                 else:
                     self.clusters.append(win_cluster)
         pass
