@@ -9,10 +9,14 @@ def get_new_centroid(win_cluster, cluster):
 
 def get_inv_cov(win_cluster, cluster, c):
     a = win_cluster.k * cluster.k / (win_cluster.k + cluster.k)
-    c_old = win_cluster.c if win_cluster.k < cluster.k else cluster.c
-    diag = np.diag(1/(transpose(c - c_old) * (c - c_old)))
+    c_old = win_cluster.centroid if win_cluster.k < cluster.k else cluster.centroid
+    diag = np.diag(1/np.matmul(transpose(c - c_old), np.array([c - c_old])))
+    I = np.identity(len(win_cluster.centroid))
 
-    return win_cluster.k * win_cluster.inv_cov + cluster.k * cluster.inv_cov + a * diag
+    result = win_cluster.k * win_cluster.inv_cov + \
+        cluster.k * cluster.inv_cov + a * diag * I
+
+    return (1/a) * result
 
 
 def merge(win_cluster, cluster):
@@ -24,7 +28,6 @@ def merge(win_cluster, cluster):
 
     new_cluster = Cluster(centroid=c,
                           inv_cov=inv_cov,
-                          radius=radius,
                           k=k,
                           S=S)
     return new_cluster
