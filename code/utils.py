@@ -22,20 +22,3 @@ def min_dist(x, clusters):
             min_cluster = cluster
 
     return min_cluster
-
-
-def transpose(x):
-    # input = np.array
-    data = np.array([x])
-    df = pd.DataFrame(data=data)
-    return df.T.to_numpy()
-
-
-def inverse(x):
-    # input = np.array
-    return np.linalg.inv(x)
-
-
-def determinant(x):
-    # input = np.array
-    return np.linalg.det(x)

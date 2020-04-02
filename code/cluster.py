@@ -6,5 +6,5 @@ class Cluster:
         self.centroid = centroid
         self.inv_cov = inv_cov
         self.k = k
-        self.S = S
+        self.S = [list(x) for x in set(tuple(x) for x in S)]
     pass

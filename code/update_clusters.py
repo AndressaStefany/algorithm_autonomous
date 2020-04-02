@@ -15,7 +15,7 @@ def update_winner_cluster(x, cluster):
     cluster.inv_cov = inv_cov
     cluster.centroid = cluster.centroid + n * aux
     cluster.k += 1
-    cluster.S.append(x)
+    cluster.S.append(list(x))
 
 
 def update_nearest_cluster(x, winner_cluster, clusters):

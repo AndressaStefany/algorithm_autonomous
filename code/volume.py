@@ -1,5 +1,5 @@
 import functools
-import math
+import numpy as np
 from numpy.linalg import inv, eig
 from scipy.special import gamma, factorial
 from radius import get_radius
@@ -25,4 +25,4 @@ def get_volume(cluster, fac, p, m):
     mult = functools.reduce(lambda x, y: x*y, list_)
     gamma_ = get_gamma(p)
 
-    return (2 * mult * math.pi ** (p/2))/gamma_
+    return (2 * mult * np.pi ** (p/2))/gamma_

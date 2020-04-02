@@ -11,5 +11,5 @@ def get_inv_cov(x, frac):
 def new_cluster(x, frac, fac, p, m):
     k = 1
     inv_cov = get_inv_cov(x, frac)
-    S = [x]
+    S = [x.tolist()]
     return Cluster(centroid=x, inv_cov=inv_cov, k=k, S=S)
