@@ -3,17 +3,17 @@ from utils import min_dist
 
 
 def update_winner_cluster(x, cluster):
-    aux = x - cluster.centroid
+    aux = (x - cluster.centroid).reshape(-1, 1)
     alpha = 1/(cluster.k+1)
     n = 1/cluster.k
-    transp = (cluster.inv_cov * aux).transpose()
-    deno = 1 + alpha * (aux.transpose() * cluster.inv_cov * aux)
+    transp = np.matmul(cluster.inv_cov, aux).T
+    deno = 1 + alpha * np.matmul(np.matmul(aux.T, cluster.inv_cov), aux)
 
-    inv_cov = cluster.inv_cov/(1-alpha) - alpha / \
-        (1-alpha) * (cluster.inv_cov * aux * transp)/deno
+    inv_cov = cluster.inv_cov/(1-alpha) - alpha / (1-alpha) * \
+        np.matmul(np.matmul(cluster.inv_cov, aux), transp) / deno
 
     cluster.inv_cov = inv_cov
-    cluster.centroid = cluster.centroid + n * aux
+    cluster.centroid = cluster.centroid + n * (x - cluster.centroid)
     cluster.k += 1
     cluster.S.append(list(x))
 

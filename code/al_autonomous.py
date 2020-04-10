@@ -17,12 +17,12 @@ Original file is located at
 # !cp '/content/scripts/cluster.py' '/content'
 # !cp '/content/scripts/radius.py' '/content'
 # !cp '/content/scripts/new_cluster.py' '/content'
-# !cp '/content/scripts/update_clusters.py' '/content'
+!cp '/content/scripts/update_clusters.py' '/content'
 # !cp '/content/scripts/utils.py' '/content'
 # !cp '/content/scripts/overlap.py' '/content'
 # !cp '/content/scripts/merge.py' '/content'
 # !cp '/content/scripts/volume.py' '/content'
-!cp '/content/scripts/split.py' '/content'
+# !cp '/content/scripts/split.py' '/content'
 !rm -r '/content/scripts/'
 
 # !cp -r '/gdrive/My Drive/Mestrado/07 - Autonomous/data/' '/content'
@@ -65,7 +65,7 @@ from tqdm import tqdm
 
 """# Algorithm"""
 
-from utils import min_dist, dist
+from utils import min_dist
 from new_cluster import new_cluster
 from update_clusters import update_winner_cluster, update_nearest_cluster
 from overlap import overlap
@@ -125,8 +125,8 @@ class Autonomous:
                     if V_m <= p*(V_w + V_c):
                         self.clusters.remove(max_cluster)
                         self.clusters.append(cluster_merged)
-                    else:
-                        split(self.clusters, win_cluster)
+                else:
+                    split(self.clusters, win_cluster)
         pass
 
 """# Test with S1
