@@ -12,8 +12,8 @@ Original file is located at
 # from google.colab import drive
 # drive.mount("/gdrive", force_remount=True)
 
-# !cp -r '/gdrive/My Drive/Mestrado/07 - Autonomous/code/' '/content'
-# !mv '/content/code' '/content/scripts'
+!cp -r '/gdrive/My Drive/Mestrado/07 - Autonomous/code/' '/content'
+!mv '/content/code' '/content/scripts'
 # !cp '/content/scripts/cluster.py' '/content'
 # !cp '/content/scripts/radius.py' '/content'
 # !cp '/content/scripts/new_cluster.py' '/content'
@@ -22,34 +22,30 @@ Original file is located at
 # !cp '/content/scripts/overlap.py' '/content'
 # !cp '/content/scripts/merge.py' '/content'
 # !cp '/content/scripts/volume.py' '/content'
-# !rm -r '/content/scripts/'
+!cp '/content/scripts/split.py' '/content'
+!rm -r '/content/scripts/'
 
 # !cp -r '/gdrive/My Drive/Mestrado/07 - Autonomous/data/' '/content'
 
-from sklearn import mixture
-from volume import get_volume
-from radius import get_radius
-from merge import merge
-from overlap import overlap
-from update_clusters import update_winner_cluster, update_nearest_cluster
-from new_cluster import new_cluster
-from utils import min_dist, dist
-from sklearn.utils import shuffle
-import random
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 from scipy.spatial import distance
+from tqdm import tqdm
+
+# to see what’s spending the most time
+# python3 -m cProfile -s cumtime al_autonomous.py > a1.txt
 
 """# Colors"""
 
-# random list of colors
+# # random list of colors
+# import random
+# from sklearn.utils import shuffle
 
 # list_cor = []
-# for i in range(0, 10000):
-#     def r(): return random.randint(0, 255)
-#     cor = '#%02X%02X%02X' % (r(), r(), r())
+# for i in range(0,10000):
+#     r = lambda: random.randint(0,255)
+#     cor = '#%02X%02X%02X' % (r(),r(),r())
 #     list_cor.append(cor)
 
 # unique_list = np.array(list_cor)
@@ -69,9 +65,17 @@ from scipy.spatial import distance
 
 """# Algorithm"""
 
+from utils import min_dist, dist
+from new_cluster import new_cluster
+from update_clusters import update_winner_cluster, update_nearest_cluster
+from overlap import overlap
+from merge import merge
+from radius import get_radius
+from volume import get_volume
+from split import split
 
 class Autonomous:
-    def __init__(self, fac, frac=100, m=4):  # default of article
+    def __init__(self, fac, frac=100, m=4): # default of article
         self.fac = fac
         self.frac = frac
         self.m = m
@@ -122,31 +126,64 @@ class Autonomous:
                         self.clusters.remove(max_cluster)
                         self.clusters.append(cluster_merged)
                     else:
-                        self.clusters.append(win_cluster)
+                        split(self.clusters, win_cluster)
         pass
-
 
 """# Test with S1
 
 http://cs.joensuu.fi/sipu/datasets/
 """
 
-data_s1 = pd.read_csv('data/s1.txt', delimiter='    ',
-                      header=None, engine='python')
+data_s1 = pd.read_csv('data/s1.txt', delimiter='    ', header=None, engine='python')
 print(data_s1.values)
 print(type(data_s1.values))
 print(len(data_s1.values))
 
 data = data_s1
-normalized_df = (data-data.min())/(data.max()-data.min())
+normalized_df=(data-data.min())/(data.max()-data.min())
 
-data_s1_cb = pd.read_csv('data/s1-cb.txt', delimiter=' ',
-                         header=None, engine='python')
+data_s1_cb = pd.read_csv('data/s1-cb.txt', delimiter=' ', header=None, engine='python')
 data_s1_cb = data_s1_cb.drop([2], axis=1)
 print(len(data_s1_cb.values))
 
-autonomous_S1 = Autonomous(fac=3.3)
+autonomous_S1 = Autonomous(fac = 3.3)
 for r in tqdm(data_s1.values):
     autonomous_S1.process(r)
 
 len(autonomous_S1.clusters)
+
+"""## Plot"""
+
+from sklearn import mixture
+
+i = 0
+while len(autonomous_S1.clusters[i].S) < 14:
+    i += 1
+
+X = autonomous_S1.clusters[i].S
+gmm = mixture.GaussianMixture(n_components=2, covariance_type='full').fit(X)
+
+data = pd.DataFrame(autonomous_S1.clusters[i].S)
+
+plt.figure()
+plt.scatter(data.iloc[:][0], data[:][1])
+plt.show()
+
+from matplotlib.colors import LogNorm
+
+# display predicted scores by the model as a contour plot
+x = np.linspace(min(data_s1.iloc[:][0]), max(data_s1.iloc[:][0]))
+y = np.linspace(min(data_s1.iloc[:][1]), max(data_s1.iloc[:][1]))
+X, Y = np.meshgrid(x, y)
+XX = np.array([X.ravel(), Y.ravel()]).T
+Z = -gmm.score_samples(XX)
+Z = Z.reshape(X.shape)
+
+CS = plt.contour(X, Y, Z, norm=LogNorm(vmin=1.0, vmax=1000.0),
+                 levels=np.logspace(0, 3, 10))
+CB = plt.colorbar(CS, shrink=0.8, extend='both')
+plt.scatter(data_s1[:][0], data_s1[:][1], 2.0)
+
+plt.title('Negative log-likelihood predicted by a GMM')
+plt.axis('tight')
+plt.show()

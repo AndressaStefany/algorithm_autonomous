@@ -3,10 +3,6 @@ import numpy as np
 from scipy.spatial import distance
 
 
-def is_empty_list(list):
-    return len(list) == 0
-
-
 def dist(x, cluster):
     return distance.mahalanobis(x, cluster.centroid, cluster.inv_cov)
 
