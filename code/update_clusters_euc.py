@@ -1,8 +1,8 @@
 import numpy as np
-from utils import get_cluster_min_dist
+from utils_euc import get_cluster_min_dist_euc
 
 
-def update_winner_cluster(x, cluster):
+def update_winner_cluster_euc(x, cluster):
     aux = (x - cluster.centroid).reshape(-1, 1)
     alpha = 1/(cluster.k+1)
     n = 1/cluster.k
@@ -18,8 +18,8 @@ def update_winner_cluster(x, cluster):
     cluster.S.append(list(x))
 
 
-def update_nearest_cluster(x, winner_cluster, clusters):
-    near_cluster = get_cluster_min_dist(winner_cluster.centroid, clusters)
+def update_nearest_cluster_euc(x, winner_cluster, clusters):
+    near_cluster = get_cluster_min_dist_euc(winner_cluster.centroid, clusters)
     clusters.remove(near_cluster)
 
     n = 1/near_cluster.k
