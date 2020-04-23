@@ -20,7 +20,7 @@ def merge(win_cluster, cluster):
          cluster.centroid)/(win_cluster.k + cluster.k)
     inv_cov = get_inv_cov(win_cluster, cluster, c)
     k = win_cluster.k + cluster.k
-    S = win_cluster.S
+    S = win_cluster.S.copy()
     S.extend(cluster.S)
 
     new_cluster = Cluster(centroid=c,

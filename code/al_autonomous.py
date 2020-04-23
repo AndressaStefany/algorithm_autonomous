@@ -9,46 +9,29 @@ Original file is located at
 # Boot
 """
 
-from update_clusters_euc import update_winner_cluster_euc, update_nearest_cluster_euc
-from new_cluster_euc import new_cluster_euc
-from utils_euc import get_cluster_min_dist_euc
-from split import split
-from volume import get_volume
-from radius import get_radius
-from merge import merge
-from overlap import overlap
-from update_clusters import update_winner_cluster, update_nearest_cluster
-from new_cluster_range import new_cluster
-from utils import get_cluster_min_dist
-from sklearn.utils import shuffle
-import random
-from tqdm import tqdm
-from scipy.spatial import distance
-import matplotlib.pyplot as plt
-import numpy as np
+# from google.colab import drive
+# drive.mount("/gdrive", force_remount=True)
+
+# !cp -r '/gdrive/My Drive/Mestrado/07 - Autonomous/code/' '/content'
+# !mv '/content/code' '/content/scripts'
+# !cp '/content/scripts/cluster.py' '/content'
+# !cp '/content/scripts/radius.py' '/content'
+# !cp '/content/scripts/new_cluster.py' '/content'
+# !cp '/content/scripts/update_clusters.py' '/content'
+# !cp '/content/scripts/utils.py' '/content'
+# !cp '/content/scripts/overlap.py' '/content'
+# !cp '/content/scripts/merge.py' '/content'
+# !cp '/content/scripts/volume.py' '/content'
+# !cp '/content/scripts/split.py' '/content'
+# !rm -r '/content/scripts/'
+
+# !cp -r '/gdrive/My Drive/Mestrado/07 - Autonomous/data/' '/content'
+
 import pandas as pd
-from google.colab import drive
-drive.mount("/gdrive", force_remount=True)
-
-!cp - r '/gdrive/My Drive/Mestrado/07 - Autonomous/code/' '/content'
-!mv '/content/code' '/content/scripts'
-!cp '/content/scripts/cluster.py' '/content'
-!cp '/content/scripts/radius.py' '/content'
-!cp '/content/scripts/new_cluster.py' '/content'
-!cp '/content/scripts/update_clusters.py' '/content'
-!cp '/content/scripts/utils.py' '/content'
-!cp '/content/scripts/new_cluster_euc.py' '/content'
-!cp '/content/scripts/new_cluster_range.py' '/content'
-!cp '/content/scripts/update_clusters_euc.py' '/content'
-!cp '/content/scripts/utils_euc.py' '/content'
-!cp '/content/scripts/overlap.py' '/content'
-!cp '/content/scripts/merge.py' '/content'
-!cp '/content/scripts/volume.py' '/content'
-!cp '/content/scripts/split.py' '/content'
-!rm - r '/content/scripts/'
-
-!cp - r '/gdrive/My Drive/Mestrado/07 - Autonomous/data/' '/content'
-
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.spatial import distance
+from tqdm import tqdm
 
 # to see what’s spending the most time
 # python3 -m cProfile -s cumtime al_autonomous.py > a1.txt
@@ -56,11 +39,13 @@ drive.mount("/gdrive", force_remount=True)
 """# Colors"""
 
 # random list of colors
+import random
+from sklearn.utils import shuffle
 
 list_cor = []
-for i in range(0, 10000):
-    def r(): return random.randint(0, 255)
-    cor = '#%02X%02X%02X' % (r(), r(), r())
+for i in range(0,10000):
+    r = lambda: random.randint(0,255)
+    cor = '#%02X%02X%02X' % (r(),r(),r())
     list_cor.append(cor)
 
 unique_list = np.array(list_cor)
@@ -73,26 +58,28 @@ list_cor = shuffle(list_cor)
 
 barWidth = 1
 
-plt.figure(figsize=(10, 5))
-for i in range(0, len(list_cor)):
-    plt.bar(i, 10, color=list_cor[i], width=barWidth, label=str(list_cor[i]))
+plt.figure(figsize=(10,5))
+for i in range(0,len(list_cor)):
+    plt.bar(i, 10, color = list_cor[i], width=barWidth, label=str(list_cor[i]))
 plt.show()
 
-alist = ['green', 'red', 'black', 'blue', 'gray', 'orange', 'violet', 'pink',
-         'brown', 'yellow', '#c2945d',
-         '#DEB887', '#5F9EA0', '#D2691E',  '#fa926b', '#5bc95b']
+alist = ['green','red','black','blue','gray','orange','violet','pink',
+                     'brown','yellow','#c2945d',  
+                     '#DEB887', '#5F9EA0', '#D2691E',  '#fa926b', '#5bc95b']
 
-"""# Algorithm
+"""# Algorithm"""
 
-## The first
-"""
-
-
-# whitout split
+from utils import get_cluster_min_dist
+from new_cluster import new_cluster
+from update_clusters import update_winner_cluster, update_nearest_cluster
+from overlap import overlap
+from merge import merge
+from radius import get_radius
+from volume import get_volume
+from split import split
 
 class Autonomous:
-    def __init__(self, range_, fac, frac=100, m=4):  # default of article
-        self.range_ = range_
+    def __init__(self, fac, frac=100, m=4): # default of article
         self.fac = fac
         self.frac = frac
         self.m = m
@@ -107,7 +94,7 @@ class Autonomous:
         # the first cluster
         if len(self.clusters) == 0:
             self.clusters.append(new_cluster(
-                x, self.frac, self.fac, p, self.m, self.range_))
+                x, self.frac, self.fac, p, self.m))
 
         else:
             # elect winning cluster
@@ -116,9 +103,14 @@ class Autonomous:
                 self.fac, p, self.m, win_cluster.k)
 
             # point is not contained in the winning cluster
-            if (distance.mahalanobis(x, win_cluster.centroid, win_cluster.inv_cov) > win_cluster_radius):
+            # print('\n')
+            # print('Euclidian: ', np.sqrt(((x - win_cluster.centroid) ** 2).sum()))
+            # print('mahalanobis: ', distance.mahalanobis(x, win_cluster.centroid, win_cluster.inv_cov))
+            # print('raio do cluster: ', win_cluster_radius)
+            # print('Quantidade de pontos no cluster vencedor:', len(win_cluster.S))
+            if (np.sqrt(((x - win_cluster.centroid) ** 2).sum()) > win_cluster_radius):
                 self.clusters.append(new_cluster(
-                    x, self.frac, self.fac, p, self.m, self.range_))
+                    x, self.frac, self.fac, p, self.m))
 
             else:
                 self.clusters.remove(win_cluster)
@@ -132,32 +124,42 @@ class Autonomous:
                 # check overlap
                 (max_olap, max_cluster) = overlap(
                     win_cluster, self.clusters)
-
+                #print('\n')
+                # print('max_olap', max_olap)
+                # print('max_cluster centroid', max_cluster.centroid)
+                # print('max_cluster S', max_cluster.S)
+                # print('win_cluster.c depois update', win_cluster.centroid)
+                # print('win_cluster.S', win_cluster.S)
                 if (max_olap > 0):
+                    # print('\n')
+                    # print('entrou no overlap')
                     cluster_merged = merge(win_cluster, max_cluster)
 
                     V_m = get_volume(cluster_merged, self.fac, p, self.m)
                     V_w = get_volume(win_cluster, self.fac, p, self.m)
                     V_c = get_volume(max_cluster, self.fac, p, self.m)
-
+                    # print('V_m', V_m)
+                    # print('V_w', V_w)
+                    # print('V_c', V_c)
+                    # print('p*(V_w + V_c)',p*(V_w + V_c))
                     # Check volume, for the final decision
                     if V_m <= p*(V_w + V_c):
+                        # print('\n')
+                        # print('entrou no merge')
                         self.clusters.remove(max_cluster)
                         self.clusters.append(cluster_merged)
                     else:
                         self.clusters.append(win_cluster)
+                # print('\n')
+                # print('Verificar split')
                 # split(self.clusters, win_cluster)
                 else:
                     self.clusters.append(win_cluster)
-
+                 
         pass
 
-
-"""## With Euclidean distance"""
-
-
 class Autonomous_euc:
-    def __init__(self, fac, frac=100, m=4):  # default of article
+    def __init__(self, fac, frac=100, m=4): # default of article
         self.fac = fac
         self.frac = frac
         self.m = m
@@ -171,79 +173,181 @@ class Autonomous_euc:
 
         # the first cluster
         if len(self.clusters) == 0:
-            self.clusters.append(new_cluster_euc(
+            self.clusters.append(new_cluster(
                 x, self.frac, self.fac, p, self.m))
 
         else:
             # elect winning cluster
-            win_cluster = get_cluster_min_dist_euc(x, self.clusters)
+            win_cluster = get_cluster_min_dist(x, self.clusters)
             win_cluster_radius = get_radius(
                 self.fac, p, self.m, win_cluster.k)
-
+            
             if (np.sqrt(((x - win_cluster.centroid) ** 2).sum()) > win_cluster_radius):
-                self.clusters.append(new_cluster_euc(
+                self.clusters.append(new_cluster(
                     x, self.frac, self.fac, p, self.m))
 
             else:
                 self.clusters.remove(win_cluster)
                 # update winning cluster
-                update_winner_cluster_euc(x, win_cluster)
+                update_winner_cluster(x, win_cluster)
 
                 if len(self.clusters) != 0:
                     # update nearest neighbor of winning cluster
-                    update_nearest_cluster_euc(x, win_cluster, self.clusters)
-                # self.clusters.append(win_cluster)
-                split(self.clusters, win_cluster)
-
+                    update_nearest_cluster(x, win_cluster, self.clusters)
+                self.clusters.append(win_cluster)
+                 
         pass
-
 
 """# Test with S1
 
 http://cs.joensuu.fi/sipu/datasets/
-
-## Data
 """
 
-data_s1 = pd.read_csv('data/s1.txt', delimiter='    ',
-                      header=None, engine='python')
+data_s1 = pd.read_csv('data/s1.txt', delimiter='    ', header=None, engine='python')
 print(data_s1.values)
 print(type(data_s1.values))
 print(len(data_s1.values))
 
 data = data_s1
-normalized_df = (data-data.min())/(data.max()-data.min())
+normalized_df=(data-data.min())/(data.max()-data.min())
 
-data_s1_cb = pd.read_csv('data/s1-cb.txt', delimiter=' ',
-                         header=None, engine='python')
+data_s1_cb = pd.read_csv('data/s1-cb.txt', delimiter=' ', header=None, engine='python')
 data_s1_cb = data_s1_cb.drop([2], axis=1)
 print(len(data_s1_cb.values))
 
-"""## Teste with first algoritm"""
-
-x = np.var(data_s1[0])
-y = np.var(data_s1[1])
-range_ = np.array([x, y])
-
-autonomous_S1 = Autonomous(range_=range_, fac=20.0)
-for r in tqdm(data_s1.values):
+autonomous_S1 = Autonomous_euc(fac = 0.1) #0.2
+for r in tqdm(normalized_df.values):
     autonomous_S1.process(r)
 print('\n')
-print('numero de clusters: ', len(autonomous_S1.clusters))
-
-"""## Test with Euclidian"""
-
-autonomous_S1_1 = Autonomous_euc(fac=0.16)  # 0.1
-for r in tqdm(normalized_df.values):
-    autonomous_S1_1.process(r)
-print('\n')
-print('numero de clusters: ', len(autonomous_S1_1.clusters))
+print('numero de clusters: ',len(autonomous_S1.clusters))
 
 i = 0
 plt.figure()
-for clusters in autonomous_S1_1.clusters:
-    plt.scatter(np.array(clusters.S)[:, 0],
-                np.array(clusters.S)[:, 1],
-                c=list_cor[i+10], s=40)
+for clusters in autonomous_S1.clusters:
+    plt.scatter(np.array(clusters.S)[:,0], 
+                np.array(clusters.S)[:,1], 
+                c=alist[i], s=40)
     i += 1
 plt.show()
+
+# with merge
+autonomous_S1 = Autonomous(fac = 0.1) #0.2
+for r in tqdm(normalized_df.values):
+    autonomous_S1.process(r)
+print('\n')
+print('numero de clusters: ',len(autonomous_S1.clusters))
+
+i = 0
+plt.figure()
+for clusters in autonomous_S1.clusters:
+    plt.scatter(np.array(clusters.S)[:,0], 
+                np.array(clusters.S)[:,1], 
+                c=alist[i], s=40)
+    i += 1
+plt.show()
+
+# print(min(data_s1[0]), max(data_s1[0]))
+# print(max(data_s1[0]) - min(data_s1[0]))
+# print(min(data_s1[1]), max(data_s1[1]))
+# print(max(data_s1[1]) - min(data_s1[1]))
+
+# plt.figure()
+# plt.scatter(data_s1[0], 
+#             data_s1[1])
+# plt.show()
+
+i = 0
+plt.figure()
+for clusters in autonomous_S1.clusters:
+    plt.scatter(np.array(clusters.S)[:,0], 
+                np.array(clusters.S)[:,1], 
+                c=list_cor[i], s=40)
+    i += 1
+plt.show()
+
+# autonomous_S1_2 = Autonomous(fac = 4.0)
+# for r in tqdm(data_s1.values):
+#     autonomous_S1_2.process(r)
+# len(autonomous_S1_2.clusters)
+
+# autonomous_S1_3 = Autonomous(fac = 4.5)
+# for r in tqdm(data_s1.values):
+#     autonomous_S1_3.process(r)
+# len(autonomous_S1_3.clusters)
+
+# autonomous_S1_4 = Autonomous(fac = 5.0)
+# for r in tqdm(data_s1.values):
+#     autonomous_S1_4.process(r)
+# len(autonomous_S1_4.clusters)
+
+# autonomous_S1_5 = Autonomous(fac = 10.0)
+# for r in tqdm(data_s1.values):
+#     autonomous_S1_5.process(r)
+# len(autonomous_S1_5.clusters)
+
+# autonomous_S1_6 = Autonomous(fac = 33)
+# for r in tqdm(data_s1.values):
+#     autonomous_S1_6.process(r)
+# len(autonomous_S1_6.clusters)
+
+# autonomous_S1_7 = Autonomous(fac = 500)
+# for r in tqdm(data_s1.values):
+#     autonomous_S1_7.process(r)
+# len(autonomous_S1_7.clusters)
+
+# autonomous_S1_8 = Autonomous(fac = 600)
+# for r in tqdm(data_s1.values):
+#     autonomous_S1_8.process(r)
+# len(autonomous_S1_8.clusters)
+
+# autonomous_S1_9 = Autonomous(fac = 650)
+# for r in tqdm(data_s1.values):
+#     autonomous_S1_9.process(r)
+# len(autonomous_S1_9.clusters)
+
+# i = 0
+# plt.figure()
+# for clusters in autonomous_S1_7.clusters:
+#     print(len(clusters.S))
+#     plt.scatter(np.array(clusters.S)[:,0], np.array(clusters.S)[:,1], c=list_cor[i], s=20)
+#     i += 1
+# plt.show()
+
+"""## Plot"""
+
+np.array(autonomous_S1.clusters[0].S)[:,0]
+
+i = 0
+plt.figure()
+for clusters in autonomous_S1.clusters:
+    if len(clusters.S) > 1:
+        plt.scatter(np.array(clusters.S)[:,0], np.array(clusters.S)[:,1], c=list_cor[i], s=20)
+        i += 1
+plt.show()
+
+i = 0
+plt.figure()
+for clusters in autonomous_S1.clusters:
+    plt.scatter(np.array(clusters.S)[:,0], np.array(clusters.S)[:,1], c=list_cor[i], s=20)
+    i += 1
+plt.show()
+
+from matplotlib.colors import LogNorm
+
+# display predicted scores by the model as a contour plot
+x = np.linspace(min(data_s1.iloc[:][0]), max(data_s1.iloc[:][0]))
+y = np.linspace(min(data_s1.iloc[:][1]), max(data_s1.iloc[:][1]))
+X, Y = np.meshgrid(x, y)
+XX = np.array([X.ravel(), Y.ravel()]).T
+Z = -gmm.score_samples(XX)
+Z = Z.reshape(X.shape)
+
+CS = plt.contour(X, Y, Z, norm=LogNorm(vmin=1.0, vmax=1000.0),
+                 levels=np.logspace(0, 3, 10))
+CB = plt.colorbar(CS, shrink=0.8, extend='both')
+plt.scatter(data_s1[:][0], data_s1[:][1], 2.0)
+
+plt.title('Negative log-likelihood predicted by a GMM')
+plt.axis('tight')
+plt.show()
+

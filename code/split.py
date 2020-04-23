@@ -7,7 +7,7 @@ import cmath
 
 
 def split(clusters, win_cluster):
-    data = np.array(win_cluster.S)
+    data = np.array(win_cluster.S.copy())
 
     gmm_1 = mixture.GaussianMixture(
         n_components=1, covariance_type='full').fit(data[:, 0].reshape(-1, 1))
@@ -46,23 +46,25 @@ def split(clusters, win_cluster):
 
             S_1 = data[(data[:, 0] <= cut_1) & (data[:, 1] <= cut_2)]
             S_2 = data[(data[:, 0] > cut_1) & (data[:, 1] > cut_2)]
+        if len(S_2) != 0:
+            k_1 = win_cluster.k * (len(S_1)/(len(S_1) + len(S_2)))
+            k_2 = win_cluster.k * (len(S_2)/(len(S_1) + len(S_2)))
 
-        k_1 = win_cluster.k * (len(S_1)/(len(S_1) + len(S_2)))
-        k_2 = win_cluster.k * (len(S_2)/(len(S_1) + len(S_2)))
+            if (k_1 != 0) & (k_2 != 0):
+                cluster_1 = Cluster(centroid=np.array([S_1[:, 0].mean(), S_1[:, 1].mean()]),
+                                    inv_cov=linalg.inv(np.cov(S_1.T)),
+                                    k=k_1,
+                                    S=S_1.tolist())
 
-        if (k_1 != 0) & (k_2 != 0):
-            cluster_1 = Cluster(centroid=np.array([S_1[:, 0].mean(), S_1[:, 1].mean()]),
-                                inv_cov=linalg.inv(np.cov(S_1.T)),
-                                k=k_1,
-                                S=S_1.tolist())
+                cluster_2 = Cluster(centroid=np.array([S_2[:, 0].mean(), S_2[:, 1].mean()]),
+                                    inv_cov=linalg.inv(np.cov(S_2.T)),
+                                    k=k_2,
+                                    S=S_2.tolist())
 
-            cluster_2 = Cluster(centroid=np.array([S_2[:, 0].mean(), S_2[:, 1].mean()]),
-                                inv_cov=linalg.inv(np.cov(S_2.T)),
-                                k=k_2,
-                                S=S_2.tolist())
-
-            clusters.append(cluster_1)
-            clusters.append(cluster_2)
+                clusters.append(cluster_1)
+                clusters.append(cluster_2)
+        else:
+            clusters.append(win_cluster)
     else:
         clusters.append(win_cluster)
     pass
